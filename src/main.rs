@@ -11,8 +11,8 @@ fn main() -> Result<(), String> {
         }
 
         match respond(line) {
-            Ok(quit) => {
-                if quit {
+            Ok(should_quit) => {
+                if should_quit {
                     break;
                 }
             }
@@ -42,6 +42,7 @@ fn respond(line: &str) -> Result<bool, String> {
     }
 }
 
+/// Instantiates a SimpleDB command line interface.
 fn cli() -> Command<'static> {
     Command::new("simpledb")
         .multicall(true)
@@ -55,6 +56,7 @@ fn cli() -> Command<'static> {
         )
 }
 
+/// Consumes user input via stdin, returns the buffer.
 fn read_line() -> Result<String, String> {
     write!(std::io::stdout(), "simpledb > ").map_err(|e| e.to_string())?;
     std::io::stdout().flush().map_err(|e| e.to_string())?;
