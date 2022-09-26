@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use clap::Command;
+use clap::{Command, Arg};
 
 fn main() -> Result<(), String> {
     loop {
@@ -32,14 +32,32 @@ fn respond(line: &str) -> Result<bool, String> {
         .try_get_matches_from(&args)
         .map_err(|e| e.to_string())?;
     match matches.subcommand() {
-        Some(("quit", _matches)) => {
+        Some(("select", sub_matches)) => {
+            let ext_args: Vec<&str> = match sub_matches.get_many::<String>("ext") {
+                Some(iter) => iter.map(|s| s.as_str()).collect(),
+                None => vec![]
+            };
+
+            println!("{:?}", ext_args);
+        },
+        Some(("insert", sub_matches)) => {
+            let ext_args: Vec<&str> = match sub_matches.get_many::<String>("ext") {
+                Some(iter) => iter.map(|s| s.as_str()).collect(),
+                None => vec![]
+            };
+
+            println!("{:?}", ext_args);
+        },
+        Some(("quit", _sub_matches)) => {
             write!(std::io::stdout(), "exiting...\n").map_err(|e| e.to_string())?;
             std::io::stdout().flush().map_err(|e| e.to_string())?;
             return Ok(true);
-        }
+        },
         Some((name, _matches)) => unimplemented!("{}", name),
         None => unreachable!("subcommand required")
     }
+
+    Ok(false)
 }
 
 /// Instantiates a SimpleDB command line interface.
@@ -49,8 +67,25 @@ fn cli() -> Command<'static> {
         .arg_required_else_help(true)
         .subcommand_required(true)
         .subcommand(
+            Command::new("select")
+                .about("Query data from SimpleDB")
+                .arg(
+                    Arg::new("ext")
+                    .takes_value(true)
+                    .multiple_values(true)
+                )
+        )
+        .subcommand(
+            Command::new("insert")
+                .about("Insert data into SimpleDB")
+                .arg(
+                    Arg::new("ext")
+                    .takes_value(true)
+                    .multiple_values(true)
+                )
+        )
+        .subcommand(
             Command::new("quit")
-                .alias("exit")
                 .alias("q")
                 .about("Quit SimpleDB")
         )
